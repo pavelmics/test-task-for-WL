@@ -1,0 +1,14 @@
+.game-field {
+    width: 99%;
+    height: 98%;
+    position:absolute;
+    background-color: #ffffff;
+}
+
+.figure-square {
+
+}
+
+.figure-round {
+
+}
