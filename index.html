@@ -7,11 +7,13 @@
 </head>
 
 <body ng-app="app">
-    <div ng-controller="RoundSquareGameCtrl">
-        <div class="game-field js-game-field" ng-init="initGameField()">
-
+    <div ng-controller="RoundSquareGameCtrl" ng-init="initGameField()">
+        <div class="game-field js-game-field">
+            <div ng-repeat="f in figures" ng-style="f.getCss()"
+                 ng-click="f.click($event)" data-ng-attr-index="{{$index}}" class="ng-scope"></div>
         </div>
     </div>
+
     <script src="/bower_components/jquery/jquery.min.js"></script>
     <script src="/bower_components/underscore/underscore-min.js"></script>
     <script src="/bower_components/angular/angular.min.js"></script>

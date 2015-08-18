@@ -1,14 +1,8 @@
 .game-field {
-    width: 99%;
-    height: 98%;
-    position:absolute;
+    width: 98%;
+    height: 97%;
+    position: absolute;
     background-color: #ffffff;
-}
-
-.figure-square {
-
-}
-
-.figure-round {
-
+    margin: auto;
+    overflow: hidden;
 }

@@ -47,6 +47,7 @@
             init: function() {
                 var self = this;
                 self.$target.on('click', function(e) { self.gameFieldClick(e); });
+                self.$target.attr('ng-template', "'test.htm'");
             },
 
             /**
@@ -67,24 +68,6 @@
             getPointFromEvent: function(e) {
                 return new Point(e.pageX - this.offset.left
                     , e.pageY - this.offset.top);
-            },
-
-            /**
-             * Renders figure on the field
-             * @param {Figure} figure
-             */
-            bindFigure: function(figure) {
-                var $div;
-                if (!figure instanceof Figure) {
-                    throw "Param must be instance of Figure"
-                }
-
-                this.zIndex += 1;
-                $div = $(document.createElement('div'));
-                $div.css({"z-index": this.zIndex});
-
-                figure.setDomElement($div);
-                this.$target.append($div);
             }
         };
 
@@ -112,11 +95,6 @@
         Figure.prototype = {
 
             /**
-             * Return html class for object
-             */
-            getClass: _abstract,
-
-            /**
              * Generates random instance of Figure
              */
             setRandomParams: function(data) {
@@ -141,6 +119,7 @@
                     , height: h
                     , top: this.center.y - halfH
                     , left: this.center.x - halfH
+                    , position: 'absolute'
                 };
             },
 
@@ -162,16 +141,13 @@
             },
 
             /**
-             * Renders figure at the field
+             * ng-click handler
+             * @param event
              */
-            render: function() {
-                if (!this.$target instanceof $) {
-                    throw 'Figure must be bound to GameField';
+            click: function(event) {
+                if (typeof this.onClick === 'function') {
+                    this.onClick(event);
                 }
-                this.$target.addClass(this.getClass());
-                this.$target.css(_.extend({
-                    position: 'absolute'
-                }, this.getCss()));
             }
         };
 
@@ -187,13 +163,6 @@
         };
         Square.prototype = Object.create(Figure.prototype);
 
-        /**
-         * @inheritdoc
-         */
-        Square.prototype.getClass = function() {
-            return 'figure-square';
-        };
-
         return Square;
     }]);
 
@@ -205,13 +174,6 @@
             this.maxHeight = 200;
         };
         Round.prototype = Object.create(Figure.prototype);
-
-        /**
-         * @inheritdoc
-         */
-        Round.prototype.getClass = function() {
-            return 'figure-round';
-        };
 
         /**
          * @inheritdoc
@@ -233,7 +195,7 @@
 // RoundSquareGameCtrl
 (function() {
 
-    var _roundSquareGameFactory = function($scope, GameField, Point, Figure, Square, Round, Utils) {
+    var _roundSquareGameFactory = function($scope, $timeout, GameField, Point, Figure, Square, Round, Utils) {
         var field;
         $scope.figures = [];
 
@@ -243,18 +205,28 @@
             field.clickCallback = function(clickPoint) {
                 var figureClass
                     , figure;
+
                 figureClass = (Utils.rand(0, 1) === 0) ? Square : Round;
 
                 figure = new figureClass();
                 figure.setRandomParams({center: clickPoint});
-                field.bindFigure(figure);
-                figure.render();
+
+                figure.onClick = function(e) {
+                    e.stopPropagation();
+                    $timeout(function() {
+                        $scope.figures.splice(parseInt($(e.target).attr('index')), 1);
+                    }, 0);
+                };
+
+                $scope.$apply(function() {
+                    $scope.figures.push(figure);
+                });
             }
-        }
+        };
     };
 
     angular.module('controllers')
-        .controller('RoundSquareGameCtrl', ['$scope', 'GameField', 'Point'
+        .controller('RoundSquareGameCtrl', ['$scope', '$timeout', 'GameField', 'Point'
             , 'Figure', 'Square', 'Round', 'Utils', _roundSquareGameFactory]);
 })();
 
